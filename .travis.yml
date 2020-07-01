@@ -1,0 +1,22 @@
+services:
+  - docker
+
+before_install:
+  - docker build -t kirylvolkau/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run kirylvolkau/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t kirylvolkau/fib-client ./client
+  - docker build -t kirylvolkau/fib-nginx ./nginx
+  - docker build -t kirylvolkau/fib-server ./server
+  - docker build -t kirylvolkau/fib-worker ./worker
+  # Push images to dockerhub: 
+  # 1. Login
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # 2. Push images
+  - docker push kirylvolkau/fib-client
+  - docker push kirylvolkau/fib-nginx
+  - docker push kirylvolkau/fib-server
+  - docker push kirylvolkau/fib-worker
